@@ -39,7 +39,7 @@
             <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" Background="Black">
                 <Grid>
                     <controls:CameraPreviewControl x:Name="CameraPreview"
-                                                   MediaCaptureSource="{Binding MediaCaptureSource}"/>
+                                                   CameraService="{Binding CameraService}"/>
                     <TextBlock Text="No Preview Available"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -73,7 +73,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Brightness" VerticalAlignment="Center" Width="80"/>
                             <Slider Grid.Column="1" Margin="10,0"
-                                    Minimum="-100" Maximum="100"
+                                    Minimum="{Binding BrightnessMin}" Maximum="{Binding BrightnessMax}"
+                                    TickFrequency="{Binding BrightnessStep}" IsSnapToTickEnabled="True"
                                     Value="{Binding CameraSettings.Brightness}"/>
                             <TextBlock Grid.Column="2" Text="{Binding CameraSettings.Brightness, StringFormat=F0}"
                                        VerticalAlignment="Center" Width="30"/>
@@ -88,7 +89,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Contrast" VerticalAlignment="Center" Width="80"/>
                             <Slider Grid.Column="1" Margin="10,0"
-                                    Minimum="-100" Maximum="100"
+                                    Minimum="{Binding ContrastMin}" Maximum="{Binding ContrastMax}"
+                                    TickFrequency="{Binding ContrastStep}" IsSnapToTickEnabled="True"
                                     Value="{Binding CameraSettings.Contrast}"/>
                             <TextBlock Grid.Column="2" Text="{Binding CameraSettings.Contrast, StringFormat=F0}"
                                        VerticalAlignment="Center" Width="30"/>
@@ -103,7 +105,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Saturation" VerticalAlignment="Center" Width="80"/>
                             <Slider Grid.Column="1" Margin="10,0"
-                                    Minimum="-100" Maximum="100"
+                                    Minimum="{Binding SaturationMin}" Maximum="{Binding SaturationMax}"
+                                    TickFrequency="{Binding SaturationStep}" IsSnapToTickEnabled="True"
                                     Value="{Binding CameraSettings.Saturation}"/>
                             <TextBlock Grid.Column="2" Text="{Binding CameraSettings.Saturation, StringFormat=F0}"
                                        VerticalAlignment="Center" Width="30"/>
@@ -118,7 +121,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Hue" VerticalAlignment="Center" Width="80"/>
                             <Slider Grid.Column="1" Margin="10,0"
-                                    Minimum="-180" Maximum="180"
+                                    Minimum="{Binding HueMin}" Maximum="{Binding HueMax}"
+                                    TickFrequency="{Binding HueStep}" IsSnapToTickEnabled="True"
                                     Value="{Binding CameraSettings.Hue}"/>
                             <TextBlock Grid.Column="2" Text="{Binding CameraSettings.Hue, StringFormat=F0}"
                                        VerticalAlignment="Center" Width="30"/>
@@ -133,7 +137,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Gamma" VerticalAlignment="Center" Width="80"/>
                             <Slider Grid.Column="1" Margin="10,0"
-                                    Minimum="0.5" Maximum="3.0"
+                                    Minimum="{Binding GammaMin}" Maximum="{Binding GammaMax}"
+                                    TickFrequency="{Binding GammaStep}" IsSnapToTickEnabled="True"
                                     Value="{Binding CameraSettings.Gamma}"/>
                             <TextBlock Grid.Column="2" Text="{Binding CameraSettings.Gamma, StringFormat=F1}"
                                        VerticalAlignment="Center" Width="30"/>
@@ -157,7 +162,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="White Balance" VerticalAlignment="Center" Width="80"/>
                             <Slider Grid.Column="1" Margin="10,0"
-                                    Minimum="2000" Maximum="10000"
+                                    Minimum="{Binding WhiteBalanceMin}" Maximum="{Binding WhiteBalanceMax}"
+                                    TickFrequency="{Binding WhiteBalanceStep}" IsSnapToTickEnabled="True"
                                     Value="{Binding CameraSettings.WhiteBalance}"
                                     IsEnabled="{Binding CameraSettings.AutoWhiteBalance, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"/>
                             <TextBlock Grid.Column="2" Text="{Binding CameraSettings.WhiteBalance, StringFormat=F0}"
@@ -174,12 +180,14 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Exposure" VerticalAlignment="Center" Width="80"/>
+                            <TextBlock Text="Exposure (log)" VerticalAlignment="Center" Width="80"
+                                       ToolTip="DirectShow exposure in log2 scale. Negative values = shorter exposure time"/>
                             <Slider Grid.Column="1" Margin="10,0"
-                                    Minimum="-10" Maximum="0"
+                                    Minimum="{Binding ExposureMin}" Maximum="{Binding ExposureMax}"
+                                    TickFrequency="{Binding ExposureStep}" IsSnapToTickEnabled="True"
                                     Value="{Binding CameraSettings.Exposure}"
                                     IsEnabled="{Binding CameraSettings.AutoExposure, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"/>
-                            <TextBlock Grid.Column="2" Text="{Binding CameraSettings.Exposure, StringFormat=F1}"
+                            <TextBlock Grid.Column="2" Text="{Binding CameraSettings.Exposure, StringFormat=F0}"
                                        VerticalAlignment="Center" Width="30"/>
                         </Grid>
 
@@ -195,7 +203,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Focus" VerticalAlignment="Center" Width="80"/>
                             <Slider Grid.Column="1" Margin="10,0"
-                                    Minimum="0" Maximum="100"
+                                    Minimum="{Binding FocusMin}" Maximum="{Binding FocusMax}"
+                                    TickFrequency="{Binding FocusStep}" IsSnapToTickEnabled="True"
                                     Value="{Binding CameraSettings.Focus}"
                                     IsEnabled="{Binding CameraSettings.AutoFocus, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"/>
                             <TextBlock Grid.Column="2" Text="{Binding CameraSettings.Focus, StringFormat=F0}"
@@ -211,11 +220,76 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Zoom" VerticalAlignment="Center" Width="80"/>
                             <Slider Grid.Column="1" Margin="10,0"
-                                    Minimum="1" Maximum="10"
+                                    Minimum="{Binding ZoomMin}" Maximum="{Binding ZoomMax}"
+                                    TickFrequency="{Binding ZoomStep}" IsSnapToTickEnabled="True"
                                     Value="{Binding CameraSettings.Zoom}"/>
                             <TextBlock Grid.Column="2" Text="{Binding CameraSettings.Zoom, StringFormat=F1}"
                                        VerticalAlignment="Center" Width="30"/>
                         </Grid>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Video Format Settings -->
+                <GroupBox Header="Video Format" Margin="0,0,0,15">
+                    <StackPanel Margin="10">
+
+                        <!-- Resolution -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Resolution" VerticalAlignment="Center" Width="80"/>
+                            <ComboBox Grid.Column="1" Margin="10,0,0,0"
+                                      ItemsSource="{Binding AvailableResolutions}"
+                                      SelectedItem="{Binding SelectedResolution}"
+                                      DisplayMemberPath="Name"/>
+                        </Grid>
+
+                        <!-- Custom Resolution -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Custom Size" VerticalAlignment="Center" Width="80"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,0">
+                                <TextBox Width="60" Text="{Binding CameraSettings.Width, UpdateSourceTrigger=PropertyChanged}"
+                                         ToolTip="自定义宽度"/>
+                                <TextBlock Text="×" VerticalAlignment="Center" Margin="5,0"/>
+                                <TextBox Width="60" Text="{Binding CameraSettings.Height, UpdateSourceTrigger=PropertyChanged}"
+                                         ToolTip="自定义高度"/>
+                                <Button Content="应用" Margin="10,0,0,0" Padding="10,2"
+                                        Command="{Binding ApplySettingsCommand}"
+                                        ToolTip="应用自定义分辨率"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Frame Rate -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Frame Rate" VerticalAlignment="Center" Width="80"/>
+                            <ComboBox Grid.Column="1" Margin="10,0,10,0"
+                                      ItemsSource="{Binding AvailableFrameRates}"
+                                      SelectedItem="{Binding CameraSettings.FrameRate}"/>
+                            <TextBlock Grid.Column="2" Text="fps" VerticalAlignment="Center" Width="30"/>
+                        </Grid>
+
+                        <!-- Current Info -->
+                        <TextBlock Margin="0,10,0,0"
+                                   Foreground="Gray" FontSize="10">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Device Current: {0}×{1} @ {2:F0}fps">
+                                    <Binding Path="ActualWidth"/>
+                                    <Binding Path="ActualHeight"/>
+                                    <Binding Path="ActualFrameRate"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
                     </StackPanel>
                 </GroupBox>
 
