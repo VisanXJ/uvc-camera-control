@@ -13,21 +13,21 @@ namespace UVCCameraControl.Controls
         private Image? _previewImage;
         private bool _isPreviewActive = false;
 
-        public static readonly DependencyProperty MediaCaptureProperty =
-            DependencyProperty.Register(nameof(MediaCaptureSource), typeof(object), typeof(CameraPreviewControl),
-                new PropertyMetadata(null, OnMediaCaptureChanged));
+        public static readonly DependencyProperty CameraServiceProperty =
+            DependencyProperty.Register(nameof(CameraService), typeof(ICameraService), typeof(CameraPreviewControl),
+                new PropertyMetadata(null, OnCameraServiceChanged));
 
-        public object? MediaCaptureSource
+        public ICameraService? CameraService
         {
-            get => GetValue(MediaCaptureProperty);
-            set => SetValue(MediaCaptureProperty, value);
+            get => (ICameraService?)GetValue(CameraServiceProperty);
+            set => SetValue(CameraServiceProperty, value);
         }
 
-        private static void OnMediaCaptureChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnCameraServiceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is CameraPreviewControl control)
             {
-                control.UpdateMediaCapture(e.NewValue);
+                control.UpdateCameraService(e.NewValue as ICameraService);
             }
         }
 
@@ -37,7 +37,6 @@ namespace UVCCameraControl.Controls
             Loaded += CameraPreviewControl_Loaded;
             Unloaded += CameraPreviewControl_Unloaded;
 
-            // Create image control for displaying frames
             _previewImage = new Image
             {
                 Stretch = Stretch.Uniform,
@@ -59,57 +58,55 @@ namespace UVCCameraControl.Controls
             StopPreview();
         }
 
-        private void UpdateMediaCapture(object? mediaCapture)
+        private void UpdateCameraService(ICameraService? cameraService)
         {
-            // Stop previous preview if any
             StopPreview();
 
-            // Get camera service from MainWindow through the visual tree
-            if (mediaCapture != null)
-            {
-                var mainWindow = Window.GetWindow(this) as MainWindow;
-                if (mainWindow?.DataContext is ViewModels.MainViewModel viewModel)
-                {
-                    // Access the camera service through reflection (temporary solution)
-                    var cameraServiceField = typeof(ViewModels.MainViewModel).GetField("_cameraService",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    _cameraService = cameraServiceField?.GetValue(viewModel) as ICameraService;
-                }
+            _cameraService = cameraService;
 
-                if (IsLoaded && _cameraService != null)
-                {
-                    StartPreview();
-                }
+            if (IsLoaded && _cameraService != null)
+            {
+                StartPreview();
             }
         }
 
         private void StartPreview()
         {
             if (_cameraService == null || _isPreviewActive)
+            {
+                System.Diagnostics.Debug.WriteLine($"CameraPreviewControl: Cannot start preview - CameraService: {_cameraService != null}, IsActive: {_isPreviewActive}");
                 return;
+            }
 
             try
             {
-                // Subscribe to frame captured event
+                System.Diagnostics.Debug.WriteLine($"CameraPreviewControl: Starting preview, subscribing to FrameCaptured event");
                 _cameraService.FrameCaptured += OnFrameCaptured;
-
-                // Set the image as child content
                 Child = _previewImage;
                 _isPreviewActive = true;
+                System.Diagnostics.Debug.WriteLine($"CameraPreviewControl: Preview started successfully");
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"CameraPreviewControl: Failed to start preview: {ex.Message}");
                 ShowError($"Failed to start preview: {ex.Message}");
             }
         }
 
         private void OnFrameCaptured(object? sender, BitmapSource bitmapSource)
         {
-            // This is already called on UI thread by the SampleGrabberCallback
-            if (_previewImage != null)
+            Dispatcher.Invoke(() =>
             {
-                _previewImage.Source = bitmapSource;
-            }
+                if (_previewImage != null && _isPreviewActive)
+                {
+                    System.Diagnostics.Debug.WriteLine($"CameraPreviewControl: Received frame, size: {bitmapSource.PixelWidth}x{bitmapSource.PixelHeight}");
+                    _previewImage.Source = bitmapSource;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"CameraPreviewControl: Frame received but preview is not active or image is null");
+                }
+            });
         }
 
         private void StopPreview()
@@ -119,13 +116,11 @@ namespace UVCCameraControl.Controls
 
             try
             {
-                // Unsubscribe from frame captured event
                 if (_cameraService != null)
                 {
                     _cameraService.FrameCaptured -= OnFrameCaptured;
                 }
 
-                // Clear the image
                 if (_previewImage != null)
                 {
                     _previewImage.Source = null;
@@ -136,7 +131,6 @@ namespace UVCCameraControl.Controls
             }
             catch (Exception)
             {
-                // Handle preview stop error silently
             }
         }
 

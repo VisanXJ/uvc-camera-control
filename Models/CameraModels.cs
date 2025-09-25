@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace UVCCameraControl.Models
 {
     public class CameraDevice
@@ -6,6 +8,27 @@ namespace UVCCameraControl.Models
         public string Name { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public bool IsEnabled { get; set; }
+    }
+
+    public class VideoResolution
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public string Name { get; set; } = string.Empty;
+
+        public override string ToString() => Name;
+
+        public static List<VideoResolution> CommonResolutions => new()
+        {
+            new VideoResolution { Width = 320, Height = 240, Name = "320×240 (QVGA)" },
+            new VideoResolution { Width = 640, Height = 480, Name = "640×480 (VGA)" },
+            new VideoResolution { Width = 800, Height = 600, Name = "800×600 (SVGA)" },
+            new VideoResolution { Width = 1024, Height = 768, Name = "1024×768 (XGA)" },
+            new VideoResolution { Width = 1280, Height = 720, Name = "1280×720 (720p)" },
+            new VideoResolution { Width = 1280, Height = 960, Name = "1280×960 (SXGA)" },
+            new VideoResolution { Width = 1600, Height = 1200, Name = "1600×1200 (UXGA)" },
+            new VideoResolution { Width = 1920, Height = 1080, Name = "1920×1080 (1080p)" },
+        };
     }
 
     public class CameraSettings
@@ -24,11 +47,11 @@ namespace UVCCameraControl.Models
         public double WhiteBalanceV { get; set; } = 0; // Red-Green balance
 
         // Camera control parameters
-        public double Exposure { get; set; } = -5;
+        public int Exposure { get; set; } = -5;  // DirectShow exposure values are integers
         public bool AutoExposure { get; set; } = true;
-        public double Focus { get; set; } = 50;
+        public int Focus { get; set; } = 50;     // DirectShow focus values are integers
         public bool AutoFocus { get; set; } = true;
-        public double Zoom { get; set; } = 1.0;
+        public int Zoom { get; set; } = 1;       // DirectShow zoom values are integers
 
         // Additional UVC parameters
         public double Sharpness { get; set; } = 0;

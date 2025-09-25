@@ -14,7 +14,9 @@ namespace UVCCameraControl.Services
         Task StopPreviewAsync();
         Task<CameraSettings> GetCameraSettingsAsync();
         Task SetCameraSettingsAsync(CameraSettings settings);
-        object? MediaCapture { get; }
+        Task<(int width, int height, double frameRate)> GetActualCameraStatusAsync();
+        Task<(int min, int max, int step, int defaultValue, bool success)> GetCameraPropertyRangeAsync(CameraProperty property);
+        bool IsConnected { get; }
         event EventHandler<BitmapSource>? FrameCaptured;
     }
 }
